@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinai Harvest | Premium Palm Jaggery & Panai Kallu</title>
+    
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        palm: {
+                            900: '#153221',
+                            800: '#1A4331', // Primary Green
+                            700: '#265C45',
+                            600: '#347C5E',
+                            500: '#429B78',
+                        },
+                        sand: {
+                            50: '#FCFBF9',
+                            100: '#F9F6F0', // Background
+                            200: '#EBE3D5',
+                            300: '#DECBA9',
+                        },
+                        earth: {
+                            500: '#C68F55', // Accents
+                            600: '#A47341'
+                        },
+                        charcoal: '#2D3748' // Text
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #F9F6F0; 
+            color: #2D3748; 
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, h5, h6, .font-serif { 
+            font-family: 'Playfair Display', serif; 
+        }
+        
+        /* Three.js Container */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .content-overlay {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #F9F6F0; }
+        ::-webkit-scrollbar-thumb { background: #265C45; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #1A4331; }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: #1A4331;
+            color: #FCFBF9;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(255,255,255,0.1);
+            transform: translate(-50%, -50%) rotate(35deg) translateY(100%);
+            transition: transform 0.5s ease;
+        }
+        .btn-primary:hover::after {
+            transform: translate(-50%, -50%) rotate(35deg) translateY(-100%);
+        }
+        .btn-primary:hover {
+            background-color: #153221;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(26, 67, 49, 0.3);
+        }
+
+        .btn-outline {
+            border: 1px solid #1A4331;
+            color: #1A4331;
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            background-color: #1A4331;
+            color: #FCFBF9;
+        }
+
+        /* Glassmorphism Navigation */
+        .glass-nav {
+            background: rgba(249, 246, 240, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(26, 67, 49, 0.1);
+            transition: all 0.3s ease;
+        }
+        .glass-nav.scrolled {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        /* Toast Notification */
+        .toast-notification {
+            transform: translateY(150%);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Product Card Hover */
+        .product-card {
+            transition: all 0.4s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        }
+        .product-card .img-container img {
+            transition: transform 0.7s ease;
+        }
+        .product-card:hover .img-container img {
+            transform: scale(1.05);
+        }
+
+        /* Education Card Reveal */
+        .edu-card {
+            border: 1px solid rgba(26, 67, 49, 0.1);
+            transition: all 0.3s ease;
+        }
+        .edu-card:hover {
+            background-color: #1A4331;
+            color: #FCFBF9;
+            transform: scale(1.02);
+        }
+        .edu-card:hover .edu-icon {
+            color: #D4AF37;
+        }
+        .edu-card:hover p {
+            color: #EBE3D5;
+        }
+
+        /* Testimonial Carousel */
+        .carousel-container {
+            overflow: hidden;
+        }
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .carousel-slide {
+            min-width: 100%;
+        }
+
+        /* Mobile Menu */
+        #mobile-menu {
+            transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        #mobile-menu.open {
+            max-height: 400px;
+            opacity: 1;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.3s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.5s; opacity: 0; }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full top-0 z-50 glass-nav py-4 px-6 md:px-12">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="text-2xl font-serif font-bold tracking-wide text-palm-800 flex items-center gap-2">
+                <i class="fa-solid fa-leaf text-earth-500"></i>
+                Thinai Harvest
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#hero" class="text-sm font-medium hover:text-palm-600 transition-colors">Home</a>
+                <a href="#education" class="text-sm font-medium hover:text-palm-600 transition-colors">The Origin</a>
+                <a href="#shop" class="text-sm font-medium hover:text-palm-600 transition-colors">Shop</a>
+                <a href="#trust" class="text-sm font-medium hover:text-palm-600 transition-colors">Reviews</a>
+            </div>
+
+            <!-- Icons -->
+            <div class="flex items-center space-x-5">
+                <a href="https://www.instagram.com/thinaiharvest?igsh=Mng4MW44bTlpN3B4" target="_blank" class="hidden md:block text-gray-600 hover:text-palm-800 transition-colors text-lg">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <div class="relative cursor-pointer group" onclick="toggleCartModal()">
+                    <i class="fa-solid fa-bag-shopping text-xl text-palm-800 group-hover:text-palm-600 transition-colors"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-earth-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">0</span>
+                </div>
+                <!-- Mobile Menu Button -->
+                <button id="menu-btn" class="md:hidden text-palm-800 text-xl focus:outline-none">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Panel -->
+        <div id="mobile-menu" class="md:hidden bg-sand-50 absolute top-full left-0 w-full border-t border-sand-200 shadow-lg">
+            <div class="flex flex-col px-6 py-4 space-y-4">
+                <a href="#hero" class="text-base font-medium text-charcoal hover:text-palm-800" onclick="closeMobileMenu()">Home</a>
+                <a href="#education" class="text-base font-medium text-charcoal hover:text-palm-800" onclick="closeMobileMenu()">The Origin</a>
+                <a href="#shop" class="text-base font-medium text-charcoal hover:text-palm-800" onclick="closeMobileMenu()">Shop</a>
+                <a href="#trust" class="text-base font-medium text-charcoal hover:text-palm-800" onclick="closeMobileMenu()">Reviews</a>
+                <a href="https://www.instagram.com/thinaiharvest?igsh=Mng4MW44bTlpN3B4" target="_blank" class="text-base font-medium text-charcoal flex items-center gap-2" onclick="closeMobileMenu()">
+                    <i class="fa-brands fa-instagram text-earth-500"></i> Instagram
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-screen flex items-center pt-20 overflow-hidden bg-gradient-to-b from-sand-100 to-sand-200">
+        <!-- Three.js Background -->
+        <div id="canvas-container"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full grid md:grid-cols-2 gap-12 items-center">
+            <div class="max-w-xl">
+                <span class="text-earth-600 font-medium tracking-widest text-sm uppercase mb-4 block stagger-1 animate-fade-in-up">100% Natural & Organic</span>
+                <h1 class="text-5xl md:text-7xl font-serif font-bold text-palm-900 leading-tight mb-6 stagger-2 animate-fade-in-up">
+                    Pure Heritage.<br>
+                    <span class="text-palm-700 italic">Natural Vitality.</span>
+                </h1>
+                <p class="text-lg text-gray-700 mb-8 leading-relaxed stagger-3 animate-fade-in-up">
+                    Discover the ancient power of Palm Jaggery and Panai Kallu by-products. Sustainably harvested, deeply nourishing, and crafted for the modern health-conscious lifestyle.
+                </p>
+                <div class="flex flex-wrap gap-4 stagger-3 animate-fade-in-up" style="animation-delay: 0.7s;">
+                    <a href="#shop" class="btn-primary px-8 py-3 rounded-full font-medium text-sm tracking-wide">Shop the Harvest</a>
+                    <a href="#education" class="btn-outline px-8 py-3 rounded-full font-medium text-sm tracking-wide flex items-center gap-2">
+                        Learn More <i class="fa-solid fa-arrow-down"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hidden md:block relative h-[500px] w-full stagger-3 animate-fade-in-up" style="animation-delay: 0.9s;">
+                <!-- Decorative image replacement using CSS and a nature image -->
+                <div class="absolute inset-0 rounded-t-full rounded-b-full overflow-hidden border-4 border-sand-50 shadow-2xl">
+                    <img src="./Gemini_Generated_Image_v7tf8cv7tf8cv7tf.png" alt="Premium Palm Jaggery Jar" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-palm-900 opacity-10 mix-blend-multiply"></div>
+                </div>
+                <!-- Floating badge -->
+                <div class="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-xl flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
+                    <div class="w-12 h-12 rounded-full bg-sand-100 flex items-center justify-center text-earth-500 text-xl">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Certified</p>
+                        <p class="text-sm font-bold text-palm-800">100% Organic</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center animate-bounce">
+            <span class="text-xs tracking-widest text-palm-800 mb-2 uppercase font-medium">Scroll</span>
+            <div class="w-[1px] h-12 bg-palm-800"></div>
+        </div>
+    </section>
+
+    <!-- Education / Origin Story -->
+    <section id="education" class="py-24 bg-sand-50 relative">
+        <div class="max-w-7xl mx-auto px-6 md:px-12 grid md:grid-cols-2 gap-12 items-center">
+            <div class="order-2 md:order-1 relative h-[500px] w-full rounded-2xl overflow-hidden shadow-xl">
+                <img src="./origin_story_tapping.png" alt="Traditional Palm Tapping" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-palm-900 opacity-10 mix-blend-multiply"></div>
+            </div>
+            <div class="order-1 md:order-2">
+                <div class="mb-12">
+                    <h2 class="text-sm font-bold text-earth-600 tracking-widest uppercase mb-3">The Science of Panai Kallu</h2>
+                    <h3 class="text-4xl font-serif font-bold text-palm-900 mb-6">Nature's Original Superfood</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Our products are derived from the nutrient-dense sap of the Palmyra palm. Unlike refined sugars, our jaggery retains its complex mineral profile and low glycemic properties.
+                    </p>
+                </div>
+                <div class="space-y-8">
+                    <div class="flex gap-5 items-start">
+                        <div class="w-14 h-14 shrink-0 bg-white shadow-sm rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-heart-pulse text-xl text-palm-700"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-serif font-bold text-palm-900 mb-1">Low Glycemic Index</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">Provides sustained energy without the insulin spikes associated with refined white sugar. Safe for mindful diets.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-5 items-start">
+                        <div class="w-14 h-14 shrink-0 bg-white shadow-sm rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-flask text-xl text-palm-700"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-serif font-bold text-palm-900 mb-1">Rich in Minerals</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">Naturally packed with Iron, Magnesium, Potassium, and essential vitamins that boost immunity and vitality.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-5 items-start">
+                        <div class="w-14 h-14 shrink-0 bg-white shadow-sm rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-seedling text-xl text-palm-700"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-serif font-bold text-palm-900 mb-1">100% Unrefined</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">No chemicals, no bleaching. Handcrafted using traditional methods to preserve nature's intended goodness.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Showcase -->
+    <section id="shop" class="py-24 bg-sand-100">
+        <div class="max-w-7xl mx-auto px-6 md:px-12">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12">
+                <div class="max-w-lg">
+                    <h2 class="text-sm font-bold text-earth-600 tracking-widest uppercase mb-3">Shop the Harvest</h2>
+                    <h3 class="text-4xl font-serif font-bold text-palm-900">Our Signature Offerings</h3>
+                </div>
+                <a href="#" class="hidden md:inline-flex items-center gap-2 text-palm-800 font-medium hover:text-earth-600 transition-colors pb-1 border-b-2 border-palm-800 hover:border-earth-600">
+                    View All Products <i class="fa-solid fa-arrow-right text-sm"></i>
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+                <!-- Product 1 -->
+                <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm group">
+                    <div class="img-container h-80 overflow-hidden relative bg-sand-200 border-b border-sand-100">
+                        <img src="./product_karuppati.png" alt="Karuppati Powder" class="w-full h-full object-cover">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full text-palm-800 shadow-sm">Bestseller</div>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex text-earth-500 text-xs">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                                <span class="text-gray-400 ml-2 font-medium">(128 reviews)</span>
+                            </div>
+                        </div>
+                        <h4 class="text-2xl font-serif font-bold text-palm-900 mb-2">Karuppati Powder</h4>
+                        <p class="text-sm text-gray-500 mb-6 h-12 leading-relaxed">Premium organic palm jaggery powder. Handcrafted, traditional, and packed with essential nutrients.</p>
+                        <div class="flex items-center justify-between pt-6 border-t border-gray-100">
+                            <span class="text-2xl font-bold text-palm-800">₹450</span>
+                            <button onclick="addToCart('Karuppati Powder', 450)" class="btn-primary w-12 h-12 rounded-full flex items-center justify-center" aria-label="Add to cart">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm group">
+                    <div class="img-container h-80 overflow-hidden relative bg-sand-200 border-b border-sand-100">
+                        <img src="./product_palm_syrup.png" alt="Palm Nectar Syrup" class="w-full h-full object-cover">
+                        <div class="absolute top-4 left-4 bg-earth-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">Organic</div>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex text-earth-500 text-xs">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                                <span class="text-gray-400 ml-2 font-medium">(84 reviews)</span>
+                            </div>
+                        </div>
+                        <h4 class="text-2xl font-serif font-bold text-palm-900 mb-2">Palm Nectar Syrup</h4>
+                        <p class="text-sm text-gray-500 mb-6 h-12 leading-relaxed">Organic, vegan, and pure handcrafted syrup. A healthy alternative to honey or refined sugar.</p>
+                        <div class="flex items-center justify-between pt-6 border-t border-gray-100">
+                            <span class="text-2xl font-bold text-palm-800">₹650</span>
+                            <button onclick="addToCart('Palm Nectar Syrup', 650)" class="btn-primary w-12 h-12 rounded-full flex items-center justify-center" aria-label="Add to cart">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center md:hidden">
+                 <a href="#" class="inline-flex items-center gap-2 text-palm-800 font-medium pb-1 border-b-2 border-palm-800">
+                    View All Products <i class="fa-solid fa-arrow-right text-sm"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust & Social Proof -->
+    <section id="trust" class="py-24 bg-palm-900 text-sand-50 overflow-hidden relative">
+        <!-- Subtle decorative background elements -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+            <div class="absolute -top-20 -left-20 w-64 h-64 rounded-full border border-sand-50/30"></div>
+            <div class="absolute bottom-10 right-10 w-96 h-96 rounded-full border border-sand-50/30"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-sm font-bold text-earth-500 tracking-widest uppercase mb-3">Testimonials</h2>
+                <h3 class="text-4xl font-serif font-bold text-white">Trusted by the Health Conscious</h3>
+            </div>
+
+            <!-- Custom Carousel -->
+            <div class="carousel-container relative max-w-4xl mx-auto">
+                <div class="carousel-track" id="testimonial-track">
+                    <!-- Slide 1 -->
+                    <div class="carousel-slide px-4">
+                        <div class="bg-palm-800/50 backdrop-blur p-8 md:p-12 rounded-2xl border border-palm-700 text-center">
+                            <div class="text-earth-500 text-2xl mb-6"><i class="fa-solid fa-quote-left"></i></div>
+                            <p class="text-lg md:text-xl font-serif italic text-sand-100 mb-8 leading-relaxed">
+                                "The quality of the Spiced Karupatti is unmatched. It reminds me of what my grandmother used to make. Finding such pure products today is rare. Highly recommended!"
+                            </p>
+                            <div>
+                                <h5 class="font-bold text-white">Priya R.</h5>
+                                <p class="text-sm text-palm-500">Verified Buyer</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="carousel-slide px-4">
+                        <div class="bg-palm-800/50 backdrop-blur p-8 md:p-12 rounded-2xl border border-palm-700 text-center">
+                            <div class="text-earth-500 text-2xl mb-6"><i class="fa-solid fa-quote-left"></i></div>
+                            <p class="text-lg md:text-xl font-serif italic text-sand-100 mb-8 leading-relaxed">
+                                "Switched out all white sugar in our house for Thinai Harvest's palm jaggery. The liquid nectar is fantastic on morning oats. You can taste the authenticity."
+                            </p>
+                            <div>
+                                <h5 class="font-bold text-white">Anand K.</h5>
+                                <p class="text-sm text-palm-500">Fitness Enthusiast</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carousel Controls -->
+                <div class="flex justify-center mt-8 gap-4">
+                    <button onclick="moveCarousel(-1)" class="w-10 h-10 rounded-full border border-palm-600 flex items-center justify-center hover:bg-palm-700 hover:text-white transition-colors">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button onclick="moveCarousel(1)" class="w-10 h-10 rounded-full border border-palm-600 flex items-center justify-center hover:bg-palm-700 hover:text-white transition-colors">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="flex flex-wrap justify-center gap-8 md:gap-16 mt-20 border-t border-palm-800 pt-12">
+                <div class="flex items-center gap-3 text-sand-200 opacity-80">
+                    <i class="fa-solid fa-leaf text-2xl text-earth-500"></i>
+                    <span class="font-medium tracking-wide">100% Natural</span>
+                </div>
+                <div class="flex items-center gap-3 text-sand-200 opacity-80">
+                    <i class="fa-solid fa-hands-holding-circle text-2xl text-earth-500"></i>
+                    <span class="font-medium tracking-wide">Direct from Farmers</span>
+                </div>
+                <div class="flex items-center gap-3 text-sand-200 opacity-80">
+                    <i class="fa-solid fa-ban text-2xl text-earth-500"></i>
+                    <span class="font-medium tracking-wide">Zero Additives</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-sand-200 pt-20 pb-10 border-t border-sand-300">
+        <div class="max-w-7xl mx-auto px-6 md:px-12">
+            <div class="grid md:grid-cols-4 gap-12 mb-16">
+                <div class="col-span-1 md:col-span-1">
+                    <a href="#" class="text-2xl font-serif font-bold text-palm-900 flex items-center gap-2 mb-6">
+                        <i class="fa-solid fa-leaf text-earth-600"></i> Thinai Harvest
+                    </a>
+                    <p class="text-sm text-gray-600 leading-relaxed mb-6">
+                        Reviving ancient wellness through pure, sustainably harvested palm jaggery products. Good for you, good for the earth.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://www.instagram.com/thinaiharvest?igsh=Mng4MW44bTlpN3B4" target="_blank" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-palm-800 hover:bg-palm-800 hover:text-white transition-colors shadow-sm">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-palm-800 hover:bg-palm-800 hover:text-white transition-colors shadow-sm">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="font-bold text-palm-900 mb-6 uppercase tracking-wider text-sm">Shop</h5>
+                    <ul class="space-y-4 text-sm text-gray-600">
+                        <li><a href="#" class="hover:text-palm-800 transition-colors">Palm Jaggery Blocks</a></li>
+                        <li><a href="#" class="hover:text-palm-800 transition-colors">Liquid Nectar</a></li>
+                        <li><a href="#" class="hover:text-palm-800 transition-colors">Spiced Sugars</a></li>
+                        <li><a href="#" class="hover:text-palm-800 transition-colors">Gift Hampers</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="font-bold text-palm-900 mb-6 uppercase tracking-wider text-sm">Company</h5>
+                    <ul class="space-y-4 text-sm text-gray-600">
+                        <li><a href="#education" class="hover:text-palm-800 transition-colors">Our Story</a></li>
+                        <li><a href="#" class="hover:text-palm-800 transition-colors">Farming Practices</a></li>
+                        <li><a href="#" class="hover:text-palm-800 transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-palm-800 transition-colors">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="font-bold text-palm-900 mb-6 uppercase tracking-wider text-sm">Newsletter</h5>
+                    <p class="text-sm text-gray-600 mb-4">Subscribe for health tips and exclusive offers.</p>
+                    <form class="flex" onsubmit="event.preventDefault(); alert('Subscribed successfully!');">
+                        <input type="email" placeholder="Your email address" required class="bg-white px-4 py-2 w-full outline-none text-sm border border-transparent focus:border-palm-500 rounded-l-md">
+                        <button type="submit" class="bg-palm-800 text-white px-4 py-2 text-sm font-medium hover:bg-palm-900 transition-colors rounded-r-md">
+                            Join
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="border-t border-sand-300 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+                <p>&copy; 2026 Thinai Harvest. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-palm-800">Privacy Policy</a>
+                    <a href="#" class="hover:text-palm-800">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast-notification fixed bottom-6 right-6 bg-palm-900 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-4 z-50">
+        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <h5 class="font-bold text-sm">Added to Cart</h5>
+            <p id="toast-msg" class="text-xs text-sand-200">Item has been added.</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Three.js (No Build Tools Required) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- Navbar Scroll Effect ---
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('scrolled');
+                navbar.classList.remove('py-4');
+                navbar.classList.add('py-2');
+            } else {
+                navbar.classList.remove('scrolled');
+                navbar.classList.add('py-4');
+                navbar.classList.remove('py-2');
+            }
+        });
+
+        // --- Mobile Menu Toggle ---
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('open');
+            const icon = menuBtn.querySelector('i');
+            if(mobileMenu.classList.contains('open')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('open');
+            const icon = menuBtn.querySelector('i');
+            icon.classList.remove('fa-xmark');
+            icon.classList.add('fa-bars');
+        }
+
+        // --- Cart Logic ---
+        let cartItems = 0;
+        const cartCountEl = document.getElementById('cart-count');
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-msg');
+
+        function addToCart(itemName, price) {
+            cartItems++;
+            cartCountEl.innerText = cartItems;
+            
+            // Pop animation on badge
+            cartCountEl.classList.add('scale-150');
+            setTimeout(() => cartCountEl.classList.remove('scale-150'), 200);
+
+            // Show Toast
+            toastMsg.innerText = `${itemName} (₹${price})`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function toggleCartModal() {
+            if(cartItems === 0) {
+                alert("Your cart is empty. Add some healthy goodness!");
+            } else {
+                alert(`You have ${cartItems} items in your cart. Proceeding to checkout...`);
+            }
+        }
+
+        // --- Testimonial Carousel ---
+        let currentSlide = 0;
+        const track = document.getElementById('testimonial-track');
+        const slides = document.querySelectorAll('.carousel-slide');
+        
+        function updateCarousel() {
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
+
+        function moveCarousel(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = slides.length - 1;
+            if (currentSlide >= slides.length) currentSlide = 0;
+            updateCarousel();
+        }
+
+        // Auto play carousel
+        setInterval(() => {
+            moveCarousel(1);
+        }, 6000);
+
+
+        // --- Three.js Background Animation ---
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            if(!container) return;
+
+            const scene = new THREE.Scene();
+            // Fog matches background color to blend out edges
+            scene.fog = new THREE.FogExp2(0xF9F6F0, 0.0015);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 40;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Create particles (representing pollen/nature dust)
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 800; // Dense enough but performant
+            const posArray = new Float32Array(particlesCount * 3);
+            const scaleArray = new Float32Array(particlesCount);
+
+            for(let i = 0; i < particlesCount * 3; i++) {
+                // Spread particles in a wide volume
+                posArray[i] = (Math.random() - 0.5) * 150;
+            }
+            
+            for(let i = 0; i < particlesCount; i++) {
+                scaleArray[i] = Math.random();
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('aScale', new THREE.BufferAttribute(scaleArray, 1));
+
+            // Custom shader material for soft glowing particles
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.3,
+                color: 0xC68F55, // Earthy gold accent
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.NormalBlending
+            });
+
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+
+            // Add some subtle floating geometric shapes representing crystals/minerals
+            const shapes = [];
+            const geom = new THREE.OctahedronGeometry(0.5, 0);
+            const mat = new THREE.MeshBasicMaterial({ 
+                color: 0x265C45, // Palm green
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15
+            });
+
+            for(let i=0; i<15; i++) {
+                const mesh = new THREE.Mesh(geom, mat);
+                mesh.position.set(
+                    (Math.random() - 0.5) * 60,
+                    (Math.random() - 0.5) * 60,
+                    (Math.random() - 0.5) * 40
+                );
+                mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                
+                // Random speeds
+                mesh.userData = {
+                    rx: (Math.random() - 0.5) * 0.01,
+                    ry: (Math.random() - 0.5) * 0.01,
+                    dy: (Math.random() - 0.5) * 0.02
+                };
+                
+                scene.add(mesh);
+                shapes.push(mesh);
+            }
+
+            // Mouse interaction
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+
+            const windowHalfX = window.innerWidth / 2;
+            const windowHalfY = window.innerHeight / 2;
+
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX - windowHalfX);
+                mouseY = (event.clientY - windowHalfY);
+            });
+
+            // Animation Loop
+            const clock = new THREE.Clock();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+                
+                targetX = mouseX * 0.001;
+                targetY = mouseY * 0.001;
+
+                // Slowly rotate whole particle system
+                particlesMesh.rotation.y = -0.02 * elapsedTime;
+                particlesMesh.rotation.x = 0.01 * elapsedTime;
+                
+                // Wave motion for particles
+                const positions = particlesMesh.geometry.attributes.position.array;
+                for(let i = 0; i < particlesCount; i++) {
+                    const i3 = i * 3;
+                    const x = positions[i3];
+                    // Gentle vertical drift + wave based on x position
+                    positions[i3 + 1] += Math.sin(elapsedTime * 0.5 + x) * 0.002;
+                }
+                particlesMesh.geometry.attributes.position.needsUpdate = true;
+
+                // Animate shapes
+                shapes.forEach(shape => {
+                    shape.rotation.x += shape.userData.rx;
+                    shape.rotation.y += shape.userData.ry;
+                    shape.position.y += Math.sin(elapsedTime + shape.position.x) * 0.01;
+                });
+
+                // Ease camera based on mouse
+                camera.position.x += (targetX * 10 - camera.position.x) * 0.02;
+                camera.position.y += (-targetY * 10 - camera.position.y) * 0.02;
+                camera.lookAt(scene.position);
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize Three.js after DOM is loaded
+        window.addEventListener('DOMContentLoaded', initThreeJS);
+
+    </script>
+</body>
+</html>
